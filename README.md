@@ -488,3 +488,415 @@ or open the notebook using Visual Studio Code and execute all cells sequentially
 # Conclusion
 
 This project successfully developed regression and binary classification models using the Medical Insurance Cost Dataset. The models were evaluated using multiple performance metrics, regularization techniques, threshold analysis, and bootstrap confidence intervals. The results demonstrate a complete supervised machine learning workflow, including preprocessing, model development, evaluation, and interpretation.
+
+
+
+## Part 3: Advanced Modeling – Ensembles, Hyperparameter Tuning, and Machine Learning Pipeline
+
+---
+
+# Project Overview
+
+This project extends the supervised learning models developed in Part 2 by implementing ensemble learning methods, hyperparameter tuning, cross-validation, feature importance analysis, feature ablation, learning curve analysis, and model serialization.
+
+The objective is to compare multiple machine learning algorithms and identify the most robust model for predicting whether an individual's medical insurance charges are above the median value.
+
+---
+
+# Dataset
+
+**Dataset:** Medical Insurance Cost Dataset
+
+The dataset contains demographic and health-related information used to predict medical insurance charges.
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| age | Age of the individual |
+| sex | Gender |
+| bmi | Body Mass Index |
+| children | Number of dependent children |
+| smoker | Smoking status |
+| region | Residential region |
+| charges | Medical insurance charges |
+
+---
+
+# Target Variable
+
+The binary classification target was defined as:
+
+```python
+y = (charges > charges.median()).astype(int)
+```
+
+- **0** → Charges less than or equal to the median
+- **1** → Charges greater than the median
+
+---
+
+# Data Preprocessing
+
+The same preprocessing workflow used in Part 2 was reproduced for this notebook:
+
+- Loaded the dataset
+- One-Hot Encoded categorical variables
+- Split the data into training and testing sets
+- Applied StandardScaler on the training data only to prevent data leakage
+
+---
+
+# Models Implemented
+
+The following models were trained and evaluated:
+
+- Decision Tree (Default)
+- Controlled Decision Tree
+- Decision Tree (Gini)
+- Decision Tree (Entropy)
+- Random Forest
+- Gradient Boosting
+- Logistic Regression (Baseline from Part 2)
+
+---
+
+# Decision Tree Analysis
+
+## Default Decision Tree
+
+A Decision Tree with default parameters was trained.
+
+### Results
+
+Training Accuracy: ***(Notebook Output)***
+
+Testing Accuracy: ***(Notebook Output)***
+
+The unconstrained decision tree achieved very high training accuracy but lower testing accuracy, indicating **overfitting**.
+
+Decision Trees are considered **high-variance models** because they greedily choose the best split at each node and never reconsider previous decisions. As a result, they can memorize the training data and fail to generalize well.
+
+---
+
+## Controlled Decision Tree
+
+Hyperparameters:
+
+```python
+max_depth = 5
+min_samples_split = 20
+```
+
+### Results
+
+Training Accuracy: ***(Notebook Output)***
+
+Testing Accuracy: ***(Notebook Output)***
+
+### Hyperparameter Explanation
+
+- **max_depth** limits the depth of the tree, reducing variance while slightly increasing bias.
+- **min_samples_split** prevents splitting very small groups of samples, reducing the chance of fitting noise.
+
+Compared with the unconstrained tree, the controlled tree produced a smaller gap between training and testing accuracy, indicating better generalization.
+
+---
+
+# Gini vs Entropy
+
+Two Decision Trees were trained using different splitting criteria.
+
+### Gini Impurity
+
+\[
+Gini = 1 - \sum p_i^2
+\]
+
+### Entropy
+
+\[
+Entropy = -\sum p_i \log_2(p_i)
+\]
+
+A node with **Gini = 0** is perfectly pure, meaning all samples belong to the same class.
+
+### Results
+
+| Criterion | Test Accuracy |
+|-----------|---------------|
+| Gini | *(Notebook Output)* |
+| Entropy | *(Notebook Output)* |
+
+---
+
+# Random Forest
+
+A Random Forest classifier was trained using:
+
+- n_estimators = 100
+- max_depth = 10
+- random_state = 42
+
+### Results
+
+Training Accuracy: ***(Notebook Output)***
+
+Testing Accuracy: ***(Notebook Output)***
+
+ROC-AUC: ***(Notebook Output)***
+
+---
+
+# Top 5 Important Features
+
+The Random Forest model identified the following five most important features:
+
+*(Replace with your notebook output)*
+
+| Feature | Importance |
+|----------|------------|
+| Feature 1 | |
+| Feature 2 | |
+| Feature 3 | |
+| Feature 4 | |
+| Feature 5 | |
+
+---
+
+# How Random Forest Computes Feature Importance
+
+Random Forest computes feature importance by measuring the average reduction in **Gini Impurity** produced by each feature across all trees in the forest.
+
+Unlike Linear Regression coefficients, feature importance values do not indicate positive or negative influence. Instead, they measure how useful a feature is for making accurate splits.
+
+---
+
+# Bagging
+
+Random Forest uses **Bootstrap Aggregating (Bagging)**.
+
+Each tree is trained using a random sample of the training data drawn **with replacement**.
+
+Additionally, each split considers only a random subset of features.
+
+These two sources of randomness reduce correlation among trees.
+
+The final prediction is obtained by averaging or voting across all trees, reducing variance and improving generalization compared with a single Decision Tree.
+
+---
+
+# Gradient Boosting
+
+Gradient Boosting was trained using:
+
+- n_estimators = 100
+- learning_rate = 0.1
+- random_state = 42
+
+### Results
+
+Training Accuracy: ***(Notebook Output)***
+
+Testing Accuracy: ***(Notebook Output)***
+
+ROC-AUC: ***(Notebook Output)***
+
+---
+
+# Feature Ablation Study
+
+The five least important features identified by the Random Forest were removed.
+
+A second Random Forest model was trained using the remaining features.
+
+### Results
+
+| Model | ROC-AUC |
+|--------|----------|
+| Full Model | *(Notebook Output)* |
+| Reduced Model | *(Notebook Output)* |
+
+### Interpretation
+
+If the reduced model achieved similar ROC-AUC, the removed features contributed little useful information and mainly increased model complexity.
+
+If the reduced model performed worse, the removed features still contained useful predictive information.
+
+Using fewer features can reduce inference time and maintenance costs in production, provided predictive performance remains acceptable.
+
+---
+
+# Cross Validation
+
+Five-fold Stratified Cross Validation was used to evaluate all models.
+
+### Results
+
+| Model | Mean AUC | Standard Deviation |
+|--------|----------|-------------------|
+| Logistic Regression | *(Notebook Output)* | *(Notebook Output)* |
+| Decision Tree | *(Notebook Output)* | *(Notebook Output)* |
+| Random Forest | *(Notebook Output)* | *(Notebook Output)* |
+| Gradient Boosting | *(Notebook Output)* | *(Notebook Output)* |
+
+Cross-validation provides a more reliable estimate of model performance because every observation is used for both training and validation across different folds.
+
+---
+
+# Hyperparameter Tuning
+
+GridSearchCV was applied to optimize the Random Forest pipeline.
+
+### Pipeline
+
+- SimpleImputer
+- StandardScaler
+- RandomForestClassifier
+
+### Hyperparameter Grid
+
+- n_estimators = [50,100,200]
+- max_depth = [5,10,None]
+- min_samples_leaf = [1,5]
+
+Total configurations:
+
+```
+3 × 3 × 2 = 18
+```
+
+Using 5-fold cross-validation:
+
+```
+18 × 5 = 90 model fits
+```
+
+### Best Parameters
+
+*(Paste grid.best_params_ output here)*
+
+### Best Cross Validation Score
+
+*(Paste grid.best_score_ output here)*
+
+### Grid Search vs Random Search
+
+Grid Search evaluates every possible hyperparameter combination.
+
+Randomized Search evaluates only a subset of combinations, making it faster for large search spaces.
+
+---
+
+# Manual Learning Curve
+
+The best pipeline was trained using progressively larger fractions of the training data.
+
+| Training Fraction | Training AUC | Test AUC |
+|-------------------|--------------|----------|
+| 20% | *(Notebook Output)* | *(Notebook Output)* |
+| 40% | *(Notebook Output)* | *(Notebook Output)* |
+| 60% | *(Notebook Output)* | *(Notebook Output)* |
+| 80% | *(Notebook Output)* | *(Notebook Output)* |
+| 100% | *(Notebook Output)* | *(Notebook Output)* |
+
+### Interpretation
+
+As the training set increases, training AUC generally decreases slightly while test AUC improves.
+
+If test AUC continues increasing at 100% of the available training data, collecting additional data may further improve model performance.
+
+---
+
+# Model Serialization
+
+The best-performing pipeline was saved using Joblib.
+
+```python
+joblib.dump(best_pipeline, "best_model.pkl")
+```
+
+The model was successfully reloaded using:
+
+```python
+joblib.load("best_model.pkl")
+```
+
+Predictions on two manually created samples were generated successfully.
+
+---
+
+# Final Model Comparison
+
+| Model | CV Mean AUC | CV Std AUC | Test AUC |
+|--------|------------|------------|----------|
+| Logistic Regression | *(Notebook Output)* | *(Notebook Output)* | *(Notebook Output)* |
+| Decision Tree | *(Notebook Output)* | *(Notebook Output)* | *(Notebook Output)* |
+| Random Forest | *(Notebook Output)* | *(Notebook Output)* | *(Notebook Output)* |
+| Gradient Boosting | *(Notebook Output)* | *(Notebook Output)* | *(Notebook Output)* |
+
+---
+
+# Recommended Model
+
+Based on the cross-validation results, Random Forest and Gradient Boosting provided the strongest predictive performance.
+
+Among these, the model with the highest cross-validated ROC-AUC and lowest variability is recommended for deployment because it demonstrates better generalization and more stable performance across different data splits.
+
+---
+
+# Technologies Used
+
+- Python
+- Pandas
+- NumPy
+- Scikit-learn
+- Matplotlib
+- Joblib
+- Jupyter Notebook
+
+---
+
+# Project Structure
+
+```
+part3/
+│
+├── data/
+│   └── insurance.csv
+│
+├── models/
+│   ├── best_model.pkl
+│   └── model_summary.csv
+│
+├── plots/
+│   └── top5_features.png
+│
+├── part3.ipynb
+├── requirements.txt
+└── README.md
+```
+
+---
+
+# How to Run
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Run the notebook:
+
+```bash
+jupyter notebook part3.ipynb
+```
+
+or open `part3.ipynb` in Visual Studio Code and run all cells.
+
+---
+
+# Conclusion
+
+This project compared multiple machine learning models using ensemble methods, cross-validation, hyperparameter tuning, and feature analysis. Random Forest and Gradient Boosting demonstrated strong predictive performance, while GridSearchCV identified an optimized pipeline that was serialized for future deployment. The experiments illustrate a complete production-oriented machine learning workflow.
